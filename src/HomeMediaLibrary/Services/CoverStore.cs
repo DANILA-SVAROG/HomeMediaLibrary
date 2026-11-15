@@ -15,6 +15,16 @@ public class CoverStore
 
     public string Import(string source)
     {
+        byte[] bytes = ValidateSource(source);
+        string extension = Path.GetExtension(source).ToLowerInvariant();
+        Directory.CreateDirectory(paths.CoversDirectory);
+        string target = Path.Combine(paths.CoversDirectory, Guid.NewGuid().ToString("N") + extension);
+        File.WriteAllBytes(target, bytes);
+        return target;
+    }
+
+    public static byte[] ValidateSource(string source)
+    {
         string extension = Path.GetExtension(source).ToLowerInvariant();
         if (extension is not ".jpg" and not ".jpeg" and not ".png")
             throw new ArgumentException("Для обложки выберите файл JPEG или PNG.");
@@ -25,10 +35,7 @@ public class CoverStore
             if (decoder is not PngBitmapDecoder and not JpegBitmapDecoder || decoder.Frames.Count == 0)
                 throw new ArgumentException("Файл не является изображением JPEG или PNG.");
         }
-        Directory.CreateDirectory(paths.CoversDirectory);
-        string target = Path.Combine(paths.CoversDirectory, Guid.NewGuid().ToString("N") + extension);
-        File.WriteAllBytes(target, bytes);
-        return target;
+        return bytes;
     }
 
     public static ImageSource LoadPreview(string? path)
