@@ -44,7 +44,14 @@ public class WindowTests
         Flush(window);
         var content = (FrameworkElement)window.Content;
         var bitmap = new RenderTargetBitmap((int)Math.Ceiling(content.ActualWidth), (int)Math.Ceiling(content.ActualHeight), 96, 96, PixelFormats.Pbgra32);
-        bitmap.Render(content);
+        var drawing = new DrawingVisual();
+        using (var dc = drawing.RenderOpen())
+        {
+            var area = new Rect(0, 0, content.ActualWidth, content.ActualHeight);
+            dc.DrawRectangle(window.Background ?? Brushes.White, null, area);
+            dc.DrawRectangle(new VisualBrush(content) { Stretch = Stretch.Fill }, null, area);
+        }
+        bitmap.Render(drawing);
         string path = Path.Combine(Path.GetTempPath(), "course-medialibrary-previews");
         Directory.CreateDirectory(path);
         var encoder = new PngBitmapEncoder();

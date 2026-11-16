@@ -3,7 +3,7 @@
                     xmlns:converters="clr-namespace:HomeMediaLibrary.Converters">
     <BooleanToVisibilityConverter x:Key="BoolVisibility"/>
     <converters:CoverConverter x:Key="Cover"/>
-    <Style TargetType="Window">
+    <Style x:Key="AppWindow" TargetType="Window">
         <Setter Property="FontFamily" Value="Segoe UI"/><Setter Property="FontSize" Value="14"/>
         <Setter Property="Background" Value="#F3F5F7"/><Setter Property="Foreground" Value="#243443"/>
     </Style>

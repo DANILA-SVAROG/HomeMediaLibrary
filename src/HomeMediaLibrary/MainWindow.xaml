@@ -1,7 +1,8 @@
 <Window x:Class="HomeMediaLibrary.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Домашняя медиатека" Width="1240" Height="820" MinWidth="1000" MinHeight="680" WindowStartupLocation="CenterScreen">
+        Title="Домашняя медиатека" Width="1240" Height="820" MinWidth="1000" MinHeight="680" WindowStartupLocation="CenterScreen"
+        Style="{DynamicResource AppWindow}">
     <Window.Resources><ResourceDictionary Source="Styles.xaml"/></Window.Resources>
     <Grid Margin="22">
         <Grid.RowDefinitions>
