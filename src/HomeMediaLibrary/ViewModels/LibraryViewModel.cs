@@ -69,9 +69,14 @@ public class LibraryViewModel : INotifyPropertyChanged
     private void LibraryChanged(object? sender, PropertyChangedEventArgs e)
     {
         Changed(nameof(CanChange)); Changed(nameof(CanEditSelection)); Changed(nameof(EmptyText));
+        if (e.PropertyName == nameof(LibraryController.IsReady) && library.IsReady) RebuildOptions();
     }
 
-    private void CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildOptions();
+    private void CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        // При загрузке обновляем список один раз, когда прочитаны все записи.
+        if (library.IsReady) RebuildOptions();
+    }
 
     private void RebuildOptions()
     {
