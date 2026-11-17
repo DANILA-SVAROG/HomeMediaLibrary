@@ -44,10 +44,18 @@ public class CoverStore
         try
         {
             using var stream = File.OpenRead(path);
+            var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
+            var frame = decoder.Frames[0];
+            int width = frame.PixelWidth, height = frame.PixelHeight;
+            stream.Position = 0;
             var image = new BitmapImage();
             image.BeginInit();
             image.CacheOption = BitmapCacheOption.OnLoad;
-            image.DecodePixelWidth = 360;
+            // Маленькие обложки не увеличиваются, большие ограничены с двух сторон.
+            double scale = Math.Min(1, Math.Min(360.0 / width, 540.0 / height));
+            if (width >= height * 360.0 / 540)
+                image.DecodePixelWidth = Math.Max(1, (int)(width * scale));
+            else image.DecodePixelHeight = Math.Max(1, (int)(height * scale));
             image.StreamSource = stream;
             image.EndInit();
             image.Freeze();
