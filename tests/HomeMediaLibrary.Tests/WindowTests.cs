@@ -219,6 +219,72 @@ public class WindowTests
     }
 
     [Test]
+    public void BoundControlsCombineFiltersAndHideRecordAfterStatusChange()
+    {
+        var paths = new AppPaths(folder);
+        var repo = new MemoryRepository { Data = new() { TestData.Movie(), TestData.Series() } };
+        var window = new MainWindow(paths, repo);
+        try
+        {
+            Show(window);
+            Control<TextBox>(window, "SearchBox").Text = "нолАН";
+            Control<ComboBox>(window, "GenreFilter").SelectedItem = window.Model.Genres.Single(option => Equals(option.Value, "Драма"));
+            Control<ComboBox>(window, "YearFilter").SelectedItem = window.Model.Years.Single(option => Equals(option.Value, 2010));
+            Control<ComboBox>(window, "KindFilter").SelectedIndex = 1;
+            Control<ComboBox>(window, "StatusFilter").SelectedIndex = 1;
+            Control<ComboBox>(window, "PurchaseFilter").SelectedIndex = 2;
+            Flush(window);
+            Assert.AreEqual(1, window.Model.VisibleItems.Count);
+            window.Model.SelectedItem = window.Model.VisibleItems[0];
+            Flush(window);
+            Control<Button>(window, "WatchButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Flush(window);
+            Assert.IsTrue(window.Model.IsEmpty);
+            Assert.IsNull(window.Model.SelectedItem);
+            Assert.IsFalse(Control<Button>(window, "DeleteButton").IsEnabled);
+            window.Model.ResetFilters();
+            Flush(window);
+            Assert.AreEqual(2, Control<ListBox>(window, "Catalog").Items.Count);
+            Assert.IsEmpty(Control<TextBox>(window, "SearchBox").Text);
+            Assert.AreEqual(0, Control<ComboBox>(window, "StatusFilter").SelectedIndex);
+        }
+        finally { window.Close(); }
+    }
+
+    [Test]
+    public void EditorCanRetrySavingWithoutLosingFieldsOrMakingExtraCoverCopies()
+    {
+        var paths = new AppPaths(Path.Combine(folder, "data"));
+        var repo = new MemoryRepository { FailSave = true };
+        var main = new MainWindow(paths, repo);
+        var editor = new EditorWindow(null, (item, cover) => main.SaveItem(item, cover, false));
+        string source = MakeCover(folder);
+        editor.WindowStartupLocation = WindowStartupLocation.Manual;
+        editor.Left = -10000; editor.Top = -10000; editor.ShowInTaskbar = false;
+        bool keptInput = false;
+        editor.Dispatcher.BeginInvoke(new Action(() =>
+        {
+            Control<TextBox>(editor, "TitleBox").Text = "Мой фильм";
+            Control<TextBox>(editor, "DescriptionBox").Text = "Описание не потеряется";
+            editor.SelectCover(source);
+            Control<Button>(editor, "SaveButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            keptInput = editor.IsVisible && editor.Result is null
+                && Control<TextBox>(editor, "DescriptionBox").Text == "Описание не потеряется";
+            repo.FailSave = false;
+            Control<Button>(editor, "SaveButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        }));
+        try
+        {
+            Assert.IsTrue(editor.ShowDialog());
+            Assert.IsTrue(keptInput);
+            Assert.AreEqual(1, main.Library.Items.Count);
+            Assert.AreEqual(1, Directory.GetFiles(paths.CoversDirectory).Length);
+            Assert.AreEqual("Описание не потеряется", main.Library.Items[0].Description);
+        }
+        finally { editor.Close(); main.Close(); }
+    }
+
+    [Test]
     public void EditorShowsValidationAndSaveErrorsWithoutClosing()
     {
         var editor = new EditorWindow(null, (_, _) => throw new IOException("Нет доступа к файлу."));
