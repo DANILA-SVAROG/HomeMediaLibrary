@@ -1,6 +1,5 @@
 using System.IO;
 using System.Text.Json;
-using System.Windows.Media.Imaging;
 
 namespace HomeMediaLibrary.Services;
 
