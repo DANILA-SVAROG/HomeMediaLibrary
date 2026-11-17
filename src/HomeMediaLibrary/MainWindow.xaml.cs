@@ -41,7 +41,7 @@ public partial class MainWindow : Window
         }
         catch (Exception exception)
         {
-            Model.LoadError = "Не удалось загрузить библиотеку. Исходный файл не изменён. " + exception.Message;
+            Model.LoadError = "Не удалось загрузить библиотеку. Исходный файл не изменён. " + ErrorMessages.Describe(exception);
             Model.StatusMessage = "Добавление и изменение записей недоступны до успешной загрузки.";
         }
     }
@@ -156,7 +156,7 @@ public partial class MainWindow : Window
         try { action(); }
         catch (Exception exception)
         {
-            Model.StatusMessage = "Операция не выполнена. " + exception.Message;
+            Model.StatusMessage = "Операция не выполнена. " + ErrorMessages.Describe(exception);
             MessageBox.Show(this, Model.StatusMessage, "Домашняя медиатека", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }

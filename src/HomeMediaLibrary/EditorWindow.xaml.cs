@@ -55,7 +55,7 @@ public partial class EditorWindow : Window
         var dialog = new OpenFileDialog { Filter = "Обложки (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png" };
         if (dialog.ShowDialog(this) != true) return;
         try { SelectCover(dialog.FileName); }
-        catch (Exception exception) { ErrorText.Text = "Не удалось открыть обложку: " + exception.Message; }
+        catch (Exception exception) { ErrorText.Text = "Не удалось открыть обложку. " + ErrorMessages.Describe(exception); }
     }
 
     public void SelectCover(string path)
@@ -95,7 +95,7 @@ public partial class EditorWindow : Window
         }
         catch (Exception exception)
         {
-            ErrorText.Text = "Не удалось сохранить запись. " + exception.Message;
+            ErrorText.Text = "Не удалось сохранить запись. " + ErrorMessages.Describe(exception);
         }
     }
 }

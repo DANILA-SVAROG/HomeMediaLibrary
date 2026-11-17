@@ -49,7 +49,9 @@ public class WindowTests
         {
             var area = new Rect(0, 0, content.ActualWidth, content.ActualHeight);
             dc.DrawRectangle(window.Background ?? Brushes.White, null, area);
-            dc.DrawRectangle(new VisualBrush(content) { Stretch = Stretch.Fill }, null, area);
+            dc.DrawRectangle(new VisualBrush(content) { ViewboxUnits = BrushMappingMode.Absolute,
+                Viewbox = new Rect(content.Margin.Left, content.Margin.Top, content.ActualWidth, content.ActualHeight),
+                Stretch = Stretch.Fill }, null, area);
         }
         bitmap.Render(drawing);
         string path = Path.Combine(Path.GetTempPath(), "course-medialibrary-previews");
@@ -231,7 +233,7 @@ public class WindowTests
             StringAssert.Contains("четырёх", Control<TextBlock>(editor, "ErrorText").Text);
             Control<TextBox>(editor, "YearBox").Text = "2024";
             Control<Button>(editor, "SaveButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            StringAssert.Contains("Нет доступа", Control<TextBlock>(editor, "ErrorText").Text);
+            StringAssert.Contains("Проверьте доступ", Control<TextBlock>(editor, "ErrorText").Text);
             Assert.IsTrue(editor.IsVisible);
             Assert.IsNull(editor.Result);
             Render(editor, "08-editor-error");

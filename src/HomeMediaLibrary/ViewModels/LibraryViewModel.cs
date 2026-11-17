@@ -49,7 +49,8 @@ public class LibraryViewModel : INotifyPropertyChanged
     public bool CanOpenImdb => SelectedItem is not null && MediaValidation.IsImdbUrl(SelectedItem.ImdbUrl);
     public bool IsEmpty => VisibleItems.Count == 0;
     public string CountText => $"Показано: {VisibleItems.Count} из {library.Items.Count}";
-    public string EmptyText => library.Items.Count == 0 ? "В медиатеке пока пусто. Добавьте первый фильм или сериал."
+    public string EmptyText => !library.IsReady ? "Библиотека не загружена. Исправьте ошибку и повторите загрузку."
+        : library.Items.Count == 0 ? "В медиатеке пока пусто. Добавьте первый фильм или сериал."
         : "По выбранным условиям ничего не найдено. Попробуйте сбросить фильтры.";
     public string StatusMessage { get => statusMessage; set { statusMessage = value; Changed(); } }
     public string LoadError { get => loadError; set { loadError = value; Changed(); Changed(nameof(HasLoadError)); } }
@@ -67,7 +68,7 @@ public class LibraryViewModel : INotifyPropertyChanged
 
     private void LibraryChanged(object? sender, PropertyChangedEventArgs e)
     {
-        Changed(nameof(CanChange)); Changed(nameof(CanEditSelection));
+        Changed(nameof(CanChange)); Changed(nameof(CanEditSelection)); Changed(nameof(EmptyText));
     }
 
     private void CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildOptions();
