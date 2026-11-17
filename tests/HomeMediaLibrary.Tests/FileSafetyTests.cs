@@ -180,4 +180,33 @@ public class FileSafetyTests
         if (deleted) Assert.IsFalse(File.Exists(path));
         else Assert.AreEqual("Повреждено другой программой", File.ReadAllText(path));
     }
+
+    [Test]
+    public async Task EightConcurrentWritersCannotLoseAnAlreadySavedChange()
+    {
+        using var barrier = new Barrier(8);
+        var tasks = Enumerable.Range(0, 8).Select(index => Task.Factory.StartNew(() =>
+        {
+            var repo = new JsonLibraryRepository();
+            Assert.IsEmpty(repo.Load(path));
+            if (!barrier.SignalAndWait(TimeSpan.FromSeconds(10))) throw new TimeoutException("Не запущены все участники проверки.");
+            try { repo.Save(new[] { TestData.Movie("Писатель " + index) }, path); return true; }
+            catch (IOException) { return false; }
+        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default)).ToArray();
+        bool[] results = await Task.WhenAll(tasks);
+        Assert.AreEqual(1, results.Count(saved => saved));
+        var loaded = new JsonLibraryRepository().Load(path);
+        Assert.AreEqual(1, loaded.Count);
+        StringAssert.StartsWith("Писатель ", loaded.Single().Title);
+        Assert.AreEqual(1, Directory.GetFiles(folder).Length);
+    }
+
+    [Test]
+    public void OccupiedParentPathCannotCreateOrDamageALibrary()
+    {
+        File.WriteAllText(path, "Это обычный файл");
+        Assert.Catch<IOException>(() => new JsonLibraryRepository().Save(new[] { TestData.Movie() }, Path.Combine(path, "library.json")));
+        Assert.AreEqual("Это обычный файл", File.ReadAllText(path));
+        Assert.AreEqual(1, Directory.GetFiles(folder).Length);
+    }
 }

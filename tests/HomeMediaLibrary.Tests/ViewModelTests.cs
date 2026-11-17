@@ -87,4 +87,33 @@ public class ViewModelTests
         Assert.IsFalse(model.CanOpenImdb);
         StringAssert.Contains("ничего не найдено", model.EmptyText);
     }
+
+    [Test]
+    public void ReloadReplacesSubscriptionsAndKeepsFiltersByValue()
+    {
+        var old = library.Items[0];
+        model.SelectedYear = model.Years.Single(option => Equals(option.Value, 2010));
+        repo.Data = new() { TestData.Movie("Перечитано") };
+        library.Load();
+        Assert.AreEqual(2010, model.SelectedYear!.Value);
+        Assert.AreEqual("Перечитано", model.VisibleItems.Single().Title);
+        int changes = 0;
+        model.PropertyChanged += (_, _) => changes++;
+        old.SetMarks(WatchStatus.Watched, true);
+        Assert.AreEqual(0, changes, "События прежних объектов после загрузки больше не обрабатываются.");
+        library.Items[0].SetMarks(WatchStatus.Watched, true);
+        Assert.Greater(changes, 0);
+    }
+
+    [Test]
+    public void DisposedModelStopsListeningToRecordsAndController()
+    {
+        int changes = 0;
+        model.PropertyChanged += (_, _) => changes++;
+        model.Dispose();
+        library.Items[0].SetMarks(WatchStatus.Watched, true);
+        library.Add(TestData.Movie("После закрытия"));
+        library.Load();
+        Assert.AreEqual(0, changes);
+    }
 }
