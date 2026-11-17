@@ -9,6 +9,7 @@ public static class ErrorMessages
     {
         return exception switch
         {
+            HomeMediaLibrary.Core.Storage.LibraryConflictException => exception.Message,
             JsonException => "Файл библиотеки повреждён или содержит недопустимые данные.",
             UnauthorizedAccessException => "Нет доступа к выбранному файлу или папке.",
             FileNotFoundException => "Выбранный файл не найден.",

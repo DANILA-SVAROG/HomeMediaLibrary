@@ -38,7 +38,7 @@ public class LibraryController : INotifyPropertyChanged
         if (items.Any(existing => existing.Id == item.Id)) throw new ArgumentException("Такой идентификатор уже существует.");
         var candidate = items.ToList();
         candidate.Add(item);
-        repository.Save(candidate, FilePath);
+        SaveChanges(candidate);
         items.Add(item);
     }
 
@@ -48,7 +48,7 @@ public class LibraryController : INotifyPropertyChanged
         int index = Find(item.Id);
         var candidate = items.ToList();
         candidate[index] = item;
-        repository.Save(candidate, FilePath);
+        SaveChanges(candidate);
         items[index] = item;
     }
 
@@ -58,7 +58,7 @@ public class LibraryController : INotifyPropertyChanged
         int index = Find(id);
         var candidate = items.ToList();
         candidate.RemoveAt(index);
-        repository.Save(candidate, FilePath);
+        SaveChanges(candidate);
         items.RemoveAt(index);
     }
 
@@ -72,7 +72,7 @@ public class LibraryController : INotifyPropertyChanged
         details.Purchased = purchased;
         var candidate = items.ToList();
         candidate[index] = original.Copy(details);
-        repository.Save(candidate, FilePath);
+        SaveChanges(candidate);
         original.SetMarks(status, purchased);
     }
 
@@ -83,6 +83,17 @@ public class LibraryController : INotifyPropertyChanged
             throw new ArgumentException("Для экспорта выберите другой файл, а не рабочую библиотеку.");
         // В экспорт попадает вся коллекция, а не отфильтрованный список.
         repository.Save(items.ToList(), path);
+    }
+
+    private void SaveChanges(List<MediaItem> candidate)
+    {
+        try { repository.Save(candidate, FilePath); }
+        catch (LibraryConflictException)
+        {
+            IsReady = false;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsReady)));
+            throw;
+        }
     }
 
     private int Find(Guid id)

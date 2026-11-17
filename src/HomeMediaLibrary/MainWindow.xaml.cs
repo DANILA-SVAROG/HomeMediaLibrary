@@ -74,8 +74,9 @@ public partial class MainWindow : Window
             if (editing) Library.Update(item);
             else Library.Add(item);
         }
-        catch
+        catch (Exception exception)
         {
+            ShowConflict(exception);
             if (imported is not null)
             {
                 try { covers.RemoveUnusedImport(imported); }
@@ -156,8 +157,14 @@ public partial class MainWindow : Window
         try { action(); }
         catch (Exception exception)
         {
+            ShowConflict(exception);
             Model.StatusMessage = "Операция не выполнена. " + ErrorMessages.Describe(exception);
             MessageBox.Show(this, Model.StatusMessage, "Домашняя медиатека", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
+    }
+
+    private void ShowConflict(Exception exception)
+    {
+        if (exception is LibraryConflictException) Model.LoadError = ErrorMessages.Describe(exception);
     }
 }

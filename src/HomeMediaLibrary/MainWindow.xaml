@@ -58,7 +58,7 @@
             <StackPanel>
                 <TextBlock Text="{Binding LoadError}" TextWrapping="Wrap" Foreground="#823E1A"/>
                 <TextBlock Text="{Binding DataPath}" TextWrapping="Wrap" Margin="0,6"/>
-                <Button Content="Повторить загрузку" Click="Reload_Click" HorizontalAlignment="Left"/>
+                <Button x:Name="ReloadButton" Content="Повторить загрузку" Click="Reload_Click" HorizontalAlignment="Left"/>
             </StackPanel>
         </Border>
         <Grid Grid.Row="3">
